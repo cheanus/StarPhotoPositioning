@@ -1,3 +1,5 @@
+import cv2
+import yaml
 import numpy as np
 from scipy.optimize import fsolve, root
 from sky_top import cluster_center
@@ -121,7 +123,7 @@ def get_location(stars_sky_pst, theta_cos):
         location_lists = cluster_center(location_lists)
     return location_lists
 
-def main(sky_top_img_pst, stars_img_pst, img_center, stars_sky_pst):
+def main(sky_top_img_pst, stars_img_pst, img_center, stars_sky_pst, is_fix_refraction_error):
     stars_sky_pst = stars_sky_pst_formater(stars_sky_pst)
 
     s0 = get_focal_length(stars_sky_pst, stars_img_pst, img_center)
@@ -131,9 +133,12 @@ def main(sky_top_img_pst, stars_img_pst, img_center, stars_sky_pst):
             stars_img_pst1[i] = fix_refraction_error(stars_img_pst[i], sky_top_img_pst, img_center, s[0])
         return get_focal_length(stars_sky_pst, stars_img_pst1, img_center) - s[0]
     
-    s = fsolve(func, s0)
-    # 筛选与s0最近的解
-    s = s[np.argmin(np.abs(s-s0))]
+    if is_fix_refraction_error:
+        s = fsolve(func, s0)
+        # 筛选与s0最近的解
+        s = s[np.argmin(np.abs(s-s0))]
+    else:
+        s = s0
 
     focal_position = np.array([img_center[0], img_center[1], -s], dtype=np.float64)
     star_3d_positions = np.hstack((stars_img_pst, np.zeros((stars_img_pst.shape[0],1))))
@@ -142,13 +147,18 @@ def main(sky_top_img_pst, stars_img_pst, img_center, stars_sky_pst):
 
     theta_cos = star_3d_vectors@sky_top_3d_vector/(np.linalg.norm(star_3d_vectors, axis=1)*np.linalg.norm(sky_top_3d_vector))
     location_lists = get_location(stars_sky_pst, theta_cos)
+    print('经度, 纬度')
     print(location_lists)
 
 if __name__ =='__main__':
-    sky_top_img_pst = np.array((1640.92903074, -3637.51682454, 0))
-    stars_img_pst = np.array([(1685.5, 1073.5), (2289.5, 620.5)])
-    img_center = np.array((3264, 2448))/2
-    stars_sky_pst = [[(12,20,8.66), (8,9,29.8)],
-                    [(13,47,21.7), (0,43,21.1)]]
+    args = yaml.safe_load(open("config.yaml"))
+    args['sky_top_img_pst'].append(0)
+    image = cv2.imread(args['img_path'])
+
+    sky_top_img_pst = np.array(args['sky_top_img_pst'])
+    stars_img_pst = np.array(args['stars_img_pst'])
+    img_center = np.array(image.shape[-2::-1])/2
+    stars_sky_pst = args['stars_sky_pst']
+    is_fix_refraction_error = args['is_fix_refraction_error']
     
-    main(sky_top_img_pst, stars_img_pst, img_center, stars_sky_pst)
+    main(sky_top_img_pst, stars_img_pst, img_center, stars_sky_pst, is_fix_refraction_error)

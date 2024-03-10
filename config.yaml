@@ -1,0 +1,43 @@
+# image path
+img_path: 'images/night_sky.jpg'
+out_dir: 'output'
+
+# stars.py
+ScaleAbs:
+  alpha: 1
+  beta: 3
+GaussianBlur:
+  size: 9
+  sigma: 0
+  # for bright moon
+  # sigma: 1000
+HoughCircles:
+  minDist: 20  # the minimum distance between the centers of the detected circles
+  param1: 10  # the max threshold of the edge detector
+  param2: 5  # the threshold of the circle center
+  minRadius: 0
+  maxRadius: 5
+  # for bright moon
+  # param1: 30
+  # param2: 10
+  # minRadius: 40
+  # maxRadius: 50
+
+# sky_top.py
+expected_center: [1600, -4000]
+expected_radius: 400
+ignore_angle_scope: [-0.785, 0.785]
+HoughLinesP:
+  threshold: 40
+  minLineLength: 100
+  maxLineGap: 30
+
+# calculate.py
+is_fix_refraction_error: False
+sky_top_img_pst: [1640.92903074, -3637.51682454]
+stars_img_pst:
+  - [1685.5, 1073.5]
+  - [2289.5, 620.5]
+stars_sky_pst:
+  - [[12,20,8.66], [8,9,29.8]]
+  - [[13,47,21.7], [0,43,21.1]]
