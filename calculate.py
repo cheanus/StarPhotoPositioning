@@ -120,7 +120,7 @@ def get_location(stars_sky_pst, theta_cos):
                 location_lists.append(point_geo)
     location_lists = np.degrees(np.array(location_lists))
     if len(location_lists) > 2:
-        location_lists = cluster_center(location_lists)
+        location_lists = cluster_center(location_lists, 5)
     return location_lists
 
 def main(sky_top_img_pst, stars_img_pst, img_center, stars_sky_pst, is_fix_refraction_error):

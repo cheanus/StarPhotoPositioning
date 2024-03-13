@@ -5,7 +5,7 @@ import numpy as np
 from sklearn.cluster import DBSCAN
 import matplotlib.pyplot as plt
 
-def cluster_center(points, eps=100, min_samples=2):
+def cluster_center(points, eps, min_samples=2):
     # 聚类，寻找数量最多的簇的中心
     clustering = DBSCAN(eps=eps, min_samples=min_samples).fit(points)
     labels = clustering.labels_
@@ -68,7 +68,7 @@ def plumb_line(img, args):
     # plt.imshow(fix_result[:, :, ::-1])
     return fix_lines, fix_result_img
 
-def find_avg_intersection(lines):
+def find_intersections(lines, args):
     intersections = []
     for i in range(len(lines)):
         for j in range(i+1, len(lines)):
@@ -78,17 +78,18 @@ def find_avg_intersection(lines):
                 continue
             x = ((x1*y0-x0*y1)*(x3-x2)-(x1-x0)*(x3*y2-x2*y3))/((x1-x0)*(y3-y2)-(x3-x2)*(y1-y0))
             y = ((x1*y0-x0*y1)*(y3-y2)-(y1-y0)*(x3*y2-x2*y3))/((x1-x0)*(y3-y2)-(x3-x2)*(y1-y0))
-            intersections.append((x, y))
+            if (x-args['expected_center'][0])**2+(y-args['expected_center'][1])**2 < args['expected_radius']**2:
+                intersections.append((x, y))
     intersections = np.array(intersections)
-    avg_intersection = cluster_center(intersections)
-    return avg_intersection
+    return intersections
 
 def main(image_path, out_dir, args):
     img = cv2.imread(image_path)
     fix_lines, fix_result_img = plumb_line(img, args)
-    sky_top = find_avg_intersection(fix_lines)
-    sky_top_img = img.copy()
+    sky_tops = find_intersections(fix_lines, args)
+    sky_top = cluster_center(sky_tops, args['expected_radius'] / 128)
     plt.imshow(fix_result_img[:, :, ::-1])
+    plt.scatter(sky_tops[:, 0], sky_tops[:, 1], c='b', s=5)
     plt.scatter(sky_top[0], sky_top[1], c='r', s=50)
     out_path = os.path.join(out_dir, 'sky_top.jpg')
     plt.savefig(out_path)
