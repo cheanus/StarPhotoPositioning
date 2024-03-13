@@ -14,7 +14,7 @@ def cluster_center(points, eps, min_samples=2):
     max_count = 0
     for label in unique_labels:
         count = np.sum(labels == label)
-        if count > max_count:
+        if count > max_count and label != -1:
             max_count = count
             max_label = label
     avg_intersection = np.mean(points[labels == max_label], axis=0)
