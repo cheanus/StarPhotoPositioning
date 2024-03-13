@@ -48,7 +48,7 @@ def plumb_line(img, args):
         maxLineGap=args['HoughLinesP']['maxLineGap']
     )
     fix_lines = []
-    fix_result = img.copy()
+    fix_result_img = img.copy()
 
     expected_center = args['expected_center']
     radius_threshold = args['expected_radius']
@@ -63,10 +63,10 @@ def plumb_line(img, args):
         # 筛选长度和角度
         if args['ignore_angle_scope'][0] < theta < args['ignore_angle_scope'][1] or distance > radius_threshold:
             continue
-        cv2.line(fix_result, (x1, y1), (x2, y2), (0, 0, 255), 2)
+        cv2.line(fix_result_img, (x1, y1), (x2, y2), (0, 0, 255), 2)
         fix_lines.append(line[0])
     # plt.imshow(fix_result[:, :, ::-1])
-    return fix_lines
+    return fix_lines, fix_result_img
 
 def find_avg_intersection(lines):
     intersections = []
@@ -85,10 +85,10 @@ def find_avg_intersection(lines):
 
 def main(image_path, out_dir, args):
     img = cv2.imread(image_path)
-    fix_lines = plumb_line(img, args)
+    fix_lines, fix_result_img = plumb_line(img, args)
     sky_top = find_avg_intersection(fix_lines)
     sky_top_img = img.copy()
-    plt.imshow(sky_top_img[:, :, ::-1])
+    plt.imshow(fix_result_img[:, :, ::-1])
     plt.scatter(sky_top[0], sky_top[1], c='r', s=50)
     out_path = os.path.join(out_dir, 'sky_top.jpg')
     plt.savefig(out_path)
