@@ -74,7 +74,7 @@ def find_nearest_point(lines, args):
         x, y = point
         value = 0
         for x1, y1, x2, y2 in lines:
-           value += np.abs((y1-y2)*x+(x2-x1)*y+x1*y2-x2*y1)/((x2-x1)**2+(y2-y1)**2)
+           value += np.abs((y1-y2)*x+(x2-x1)*y+x1*y2-x2*y1)/np.sqrt((x2-x1)**2+(y2-y1)**2)
         return value
     x0, y0 = args['expected_center']
     point = fmin(funs, (x0, y0), disp=False)
