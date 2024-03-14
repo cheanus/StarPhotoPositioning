@@ -48,6 +48,9 @@ def plumb_line(img, args):
         minLineLength=args['HoughLinesP']['minLineLength'],
         maxLineGap=args['HoughLinesP']['maxLineGap']
     )
+    return lines
+
+def lines_filter(img, lines):
     fix_lines = []
     fix_result_img = img.copy()
 
@@ -82,8 +85,14 @@ def find_nearest_point(lines, args):
     
 def main(image_path, out_dir, args):
     img = cv2.imread(image_path)
-    fix_lines, fix_result_img = plumb_line(img, args)
-    sky_top = find_nearest_point(fix_lines, args)
+
+    while args['expected_radius'] > 1:
+        lines = plumb_line(img, args)
+        fix_lines, fix_result_img = lines_filter(img, lines)
+        sky_top = find_nearest_point(fix_lines, args)
+        args['expected_radius'] = 1.1 * np.sqrt(((sky_top - args['expected_center'])**2).sum())
+        args['expected_center'] = sky_top
+
     plt.imshow(fix_result_img[:, :, ::-1])
     plt.scatter(sky_top[0], sky_top[1], c='r', s=50)
     out_path = os.path.join(out_dir, 'sky_top.jpg')
@@ -92,6 +101,8 @@ def main(image_path, out_dir, args):
 
 if __name__ == '__main__':
     args = yaml.safe_load(open("config.yaml"))
+    args['expected_center'] = np.array(args['expected_center'])
+
     image_path = args['img_path']
     out_dir = args['out_dir']
     main(image_path, out_dir, args)

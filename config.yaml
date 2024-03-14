@@ -24,7 +24,7 @@ HoughCircles:
   # maxRadius: 50
 
 # sky_top.py
-expected_center: [2600, -1400]
+expected_center: [2500, -1200]
 expected_radius: 400
 ignore_angle_scope: [0.785, 3.14]
 HoughLinesP:
@@ -34,7 +34,7 @@ HoughLinesP:
 
 # calculate.py
 is_fix_refraction_error: False
-sky_top_img_pst: [2454.89606788, -1180.9795717]
+sky_top_img_pst: [2464.72242052, -1206.3301124]
 stars_img_pst:
   - [1410.5, 1398.5]  # 南河三
   - [2221.5, 453.5]  # 井宿三
