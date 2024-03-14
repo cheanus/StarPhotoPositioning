@@ -2,8 +2,9 @@ import os
 import cv2
 import yaml
 import numpy as np
-from sklearn.cluster import DBSCAN
 import matplotlib.pyplot as plt
+from scipy.optimize import fmin
+from sklearn.cluster import DBSCAN
 
 def cluster_center(points, eps, min_samples=2):
     # 聚类，寻找数量最多的簇的中心
@@ -68,28 +69,22 @@ def plumb_line(img, args):
     # plt.imshow(fix_result[:, :, ::-1])
     return fix_lines, fix_result_img
 
-def find_intersections(lines, args):
-    intersections = []
-    for i in range(len(lines)):
-        for j in range(i+1, len(lines)):
-            x0, y0, x1, y1 = lines[i]
-            x2, y2, x3, y3 = lines[j]
-            if (x1-x0)*(y3-y2) == (x3-x2)*(y1-y0):
-                continue
-            x = ((x1*y0-x0*y1)*(x3-x2)-(x1-x0)*(x3*y2-x2*y3))/((x1-x0)*(y3-y2)-(x3-x2)*(y1-y0))
-            y = ((x1*y0-x0*y1)*(y3-y2)-(y1-y0)*(x3*y2-x2*y3))/((x1-x0)*(y3-y2)-(x3-x2)*(y1-y0))
-            if (x-args['expected_center'][0])**2+(y-args['expected_center'][1])**2 < args['expected_radius']**2:
-                intersections.append((x, y))
-    intersections = np.array(intersections)
-    return intersections
-
+def find_nearest_point(lines, args):
+    def funs(point):
+        x, y = point
+        value = 0
+        for x1, y1, x2, y2 in lines:
+           value += np.abs((y1-y2)*x+(x2-x1)*y+x1*y2-x2*y1)/((x2-x1)**2+(y2-y1)**2)
+        return value
+    x0, y0 = args['expected_center']
+    point = fmin(funs, (x0, y0), disp=False)
+    return point
+    
 def main(image_path, out_dir, args):
     img = cv2.imread(image_path)
     fix_lines, fix_result_img = plumb_line(img, args)
-    sky_tops = find_intersections(fix_lines, args)
-    sky_top = cluster_center(sky_tops, args['expected_radius'] / 128)
+    sky_top = find_nearest_point(fix_lines, args)
     plt.imshow(fix_result_img[:, :, ::-1])
-    plt.scatter(sky_tops[:, 0], sky_tops[:, 1], c='b', s=5)
     plt.scatter(sky_top[0], sky_top[1], c='r', s=50)
     out_path = os.path.join(out_dir, 'sky_top.jpg')
     plt.savefig(out_path)
