@@ -85,10 +85,12 @@ def find_nearest_point(lines, args):
     
 def main(image_path, out_dir, args):
     img = cv2.imread(image_path)
+    lines = plumb_line(img, args)
 
     while args['expected_radius'] > 1:
-        lines = plumb_line(img, args)
         fix_lines, fix_result_img = lines_filter(img, lines)
+        if len(fix_lines) <= 1:
+            break
         sky_top = find_nearest_point(fix_lines, args)
         args['expected_radius'] = 1.1 * np.sqrt(((sky_top - args['expected_center'])**2).sum())
         args['expected_center'] = sky_top
