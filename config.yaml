@@ -26,7 +26,7 @@ HoughCircles:
 # sky_top.py
 expected_center: [2500, -1200]
 expected_radius: 400
-ignore_angle_scope: [0.785, 3.14]
+ignore_angle_scope: [45, 180]
 HoughLinesP:
   threshold: 40
   minLineLength: 100

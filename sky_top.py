@@ -104,6 +104,7 @@ def main(image_path, out_dir, args):
 if __name__ == '__main__':
     args = yaml.safe_load(open("config.yaml"))
     args['expected_center'] = np.array(args['expected_center'])
+    args['ignore_angle_scope'] = np.array(args['ignore_angle_scope'])/180*np.pi
 
     image_path = args['img_path']
     out_dir = args['out_dir']
