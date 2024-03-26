@@ -9,7 +9,7 @@ ScaleAbs:
 GaussianBlur:
   size: 9
   sigma: 0
-  # for bright moon
+  ## for bright moon
   # sigma: 1000
 HoughCircles:
   minDist: 20  # the minimum distance between the centers of the detected circles
@@ -17,7 +17,7 @@ HoughCircles:
   param2: 5  # the threshold of the circle center
   minRadius: 0
   maxRadius: 5
-  # for bright moon
+  ## for bright moon
   # param1: 30
   # param2: 10
   # minRadius: 40
@@ -33,7 +33,7 @@ HoughLinesP:
   maxLineGap: 30
 
 # calculate.py
-is_fix_refraction_error: False
+is_fix_refraction_error: False  # whether to fix the air refraction error
 sky_top_img_pst: [2464.72242052, -1206.3301124]
 stars_img_pst:
   - [1410.5, 1398.5]  # 南河三
@@ -46,7 +46,7 @@ stars_img_pst:
   - [3405.5, 1439.5]  # 参宿一
   - [3476.5, 1367.5]  # 参宿二
   - [3536.5, 1295.5]  # 参宿三
-stars_sky_pst:
+stars_sky_pst:  # Star coordinates in the angle system of coordinate at 0°N, 0°E position
   - [[15,9,4.96], [5,9,42.7]]  # 南河三
   - [[16,10,32.76], [16,22,41.8]]  # 井宿三
   - [[16,3,26.47], [-16,-45,-8.1]]   # 天狼
