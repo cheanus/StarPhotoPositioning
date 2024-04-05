@@ -15,7 +15,7 @@ def get_user_input(image):
     # 返回用户选择的区域
     return roi
 
-def find_moon_center(image, roi, args):
+def find_star_center(image, roi, args):
     # 裁剪图像为用户选择的区域
     roi_image = image[int(roi[1]):int(roi[1] + roi[3]), int(roi[0]):int(roi[0] + roi[2])]
 
@@ -66,8 +66,8 @@ def main(image, args):
     # 获取用户输入
     user_roi = get_user_input(image)
 
-    # 查找月亮中心点
-    find_moon_center(image, user_roi, args)
+    # 查找星星中心点
+    find_star_center(image, user_roi, args)
 
 if __name__ == '__main__':
     args = yaml.safe_load(open("config.yaml"))
