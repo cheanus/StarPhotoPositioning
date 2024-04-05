@@ -53,6 +53,9 @@ def find_star_center(image, roi, args):
         print('Warning: 找到两个及以上的圆心。')
     # 输出中心点坐标
     print("中心点坐标:", center)
+    # 保存检测后的区域图片
+    plt.imshow(roi_image[:,:,::-1])
+    plt.savefig(join(args['out_dir'], 'roi_image.png'))
 
     # 显示标记后的图像
     cv2.namedWindow('Image', cv2.WINDOW_FREERATIO)
