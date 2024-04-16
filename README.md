@@ -14,6 +14,11 @@ Only use stars and time to locate the shooting location of photos
 - sympy
 - matplotlib
 - sklearn
+## Get Started
+为查看对默认图像的定位效果，可直接运行
+```bash
+python calculate.py
+```
 ## Tutorial
 1. 将照片放入`images/`目录下，或者使用该目录下的默认照片
 2. 在`config.yaml`中填写照片路径`image_path`，运行`stars.py`，用小框框选星星，并将得到的坐标填在`stars_img_pst`下
