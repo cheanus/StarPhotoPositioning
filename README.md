@@ -29,6 +29,8 @@ python calculate.py
 - 一般使用`config.yaml`的默认参数即可获得良好效果，有特殊需求的情况下可参照opencv相关函数参数的含义来调整
 - `is_fix_refraction_error`可用来修正大气折射误差，但运算量较大且修正幅度不高，不建议使用
 - 该程序的主要误差一是灭点定位，二是照片畸变。如果你需要更好的效果，需通过专业软件修正照片畸变后再使用本程序
+## How it works
+- [仅凭星星和时间就能定位照片位置？](https://caveallegory.cn/2024/04/%E4%BB%85%E5%87%AD%E6%98%9F%E6%98%9F%E5%92%8C%E6%97%B6%E9%97%B4%E5%B0%B1%E8%83%BD%E5%AE%9A%E4%BD%8D%E7%85%A7%E7%89%87%E4%BD%8D%E7%BD%AE%EF%BC%9F/)
 ## Credits
 - [天文学真的对个人来说，毫无用处吗？ - 鬼蝉的回答 - 知乎](
 https://www.zhihu.com/question/603566190/answer/3313965267)
