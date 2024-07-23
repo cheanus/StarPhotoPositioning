@@ -15,35 +15,41 @@ def delete_outliers(data):
     data = data[np.abs(data - mean) < 3 * std]
     return data
 
-def fix_refraction_error(star_img_pst, sky_top_img_pst, img_center, focal_length):
-    try:
-        focal_3d_pst = np.array([img_center[0], img_center[1], -focal_length], dtype=np.float64)
-    except:
-        print('Warning: 请检查焦距是否为正实数。')
-        print(focal_length)
-        exit()
-    star_3d_pst0 = np.hstack((star_img_pst, 0))
+def refraction_pst(stars_sky_pst, stars_img_pst, sky_top_img_pst, img_center):
+    # 由修正后的星空位置计算焦距
+    s0 = get_focal_length(stars_sky_pst, stars_img_pst, img_center)
+    stars_3d_pst1 = np.zeros((stars_img_pst.shape[0], 3), dtype=np.float64)
 
-    star_focal_vector0 = star_3d_pst0 - focal_3d_pst
-    sky_top_focal_vector = sky_top_img_pst - focal_3d_pst
+    for i in range(stars_img_pst.shape[0]):
+        star_img_pst = stars_img_pst[i]
+        
+        focal_3d_pst = np.array([img_center[0], img_center[1], -s0], dtype=np.float64)
+        star_3d_pst0 = np.hstack((star_img_pst, 0))
 
-    theta0 = np.arccos(
-        star_focal_vector0 @ sky_top_focal_vector
-        /np.linalg.norm(star_focal_vector0) /np.linalg.norm(sky_top_focal_vector)
-    )
-    theta1 = theta0 + 1/np.tan((90-theta0+7.31/(90-theta0+4.4))/180*np.pi)/60/180*np.pi
+        star_focal_vector0 = star_3d_pst0 - focal_3d_pst
+        sky_top_focal_vector = sky_top_img_pst - focal_3d_pst
 
-    line_vector = star_3d_pst0 - sky_top_img_pst
+        # 计算每颗星的天顶角
+        theta0 = np.arccos(
+            star_focal_vector0 @ sky_top_focal_vector
+            /np.linalg.norm(star_focal_vector0) /np.linalg.norm(sky_top_focal_vector)
+        )
+        # 计算修正后的天顶角
+        # theta1 = theta0 + 1/np.tan((90-theta0+7.31/(90-theta0+4.4))/180*np.pi)/60/180*np.pi
+        theta1 = theta0 - 1.02/np.tan((90-theta0+10.3/(90-theta0+5.11))/180*np.pi)/60/180*np.pi
 
-    t = symbols('t', real=True, positive=True)
-    star_focal_vector1 = star_3d_pst0 + t*line_vector - focal_3d_pst
-    eq = Eq(
-        star_focal_vector1 @ sky_top_focal_vector,
-        ((star_focal_vector1**2).sum()*(sky_top_focal_vector**2).sum())**0.5 * np.cos(theta1)
-    )
-    t = solve(eq, t)[0]
-    star_3d_pst1 = star_3d_pst0 + t*line_vector
-    return star_3d_pst1[:2]
+        line_vector = sky_top_img_pst - star_3d_pst0
+
+        t = symbols('t', real=True, positive=True)
+        star_focal_vector1 = star_3d_pst0 + t*line_vector - focal_3d_pst
+        eq = Eq(
+            star_focal_vector1 @ sky_top_focal_vector,
+            ((star_focal_vector1**2).sum()*(sky_top_focal_vector**2).sum())**0.5 * np.cos(theta1)
+        )
+        t = solve(eq, t)[0]
+        # 计算修正后的星空位置
+        stars_3d_pst1[i] = star_3d_pst0 + t*line_vector
+    return stars_3d_pst1[:, :2]
 
 def stars_sky_pst_formater(stars_sky_pst):
     for star_sky_pst in stars_sky_pst:
@@ -126,19 +132,17 @@ def get_location(stars_sky_pst, theta_cos):
 def main(sky_top_img_pst, stars_img_pst, img_center, stars_sky_pst, is_fix_refraction_error):
     stars_sky_pst = stars_sky_pst_formater(stars_sky_pst)
 
-    s0 = get_focal_length(stars_sky_pst, stars_img_pst, img_center)
-    def func(s):
-        stars_img_pst1 = np.zeros_like(stars_img_pst)
-        for i in range(stars_img_pst.shape[0]):
-            stars_img_pst1[i] = fix_refraction_error(stars_img_pst[i], sky_top_img_pst, img_center, s[0])
-        return get_focal_length(stars_sky_pst, stars_img_pst1, img_center) - s[0]
+    s = get_focal_length(stars_sky_pst, stars_img_pst, img_center)
+
+    def func(fix_stars_img_pst):
+        # 将展平的fix_stars_img_pst还原
+        fix_stars_img_pst = fix_stars_img_pst.reshape(stars_img_pst.shape)
+        error = refraction_pst(stars_sky_pst, fix_stars_img_pst, sky_top_img_pst, img_center) - stars_img_pst
+        print((error**2).sum())
+        return error.flatten()
     
     if is_fix_refraction_error:
-        s = fsolve(func, s0)
-        # 筛选与s0最近的解
-        s = s[np.argmin(np.abs(s-s0))]
-    else:
-        s = s0
+        stars_img_pst = fsolve(func, stars_img_pst.flatten())
 
     focal_position = np.array([img_center[0], img_center[1], -s], dtype=np.float64)
     star_3d_positions = np.hstack((stars_img_pst, np.zeros((stars_img_pst.shape[0],1))))

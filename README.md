@@ -9,6 +9,7 @@ Only use stars and time to locate the shooting location of photos
 - **误差一般在50km以下**
 ## Requirements
 - python
+- pyyaml
 - opencv
 - scipy
 - sympy
