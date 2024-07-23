@@ -28,27 +28,29 @@ def refraction_pst(stars_sky_pst, stars_img_pst, sky_top_img_pst, img_center):
 
         star_focal_vector0 = star_3d_pst0 - focal_3d_pst
         sky_top_focal_vector = sky_top_img_pst - focal_3d_pst
+        sky_top_star_vector = sky_top_img_pst - star_3d_pst0
 
+        # 计算灭点处夹角
+        alpha = np.arccos(
+            sky_top_star_vector @ sky_top_focal_vector
+            /np.linalg.norm(sky_top_star_vector) /np.linalg.norm(sky_top_focal_vector)
+        )
         # 计算每颗星的天顶角
         theta0 = np.arccos(
             star_focal_vector0 @ sky_top_focal_vector
             /np.linalg.norm(star_focal_vector0) /np.linalg.norm(sky_top_focal_vector)
         )
         # 计算修正后的天顶角
-        # theta1 = theta0 + 1/np.tan((90-theta0+7.31/(90-theta0+4.4))/180*np.pi)/60/180*np.pi
         theta1 = theta0 - 1.02/np.tan((90-theta0+10.3/(90-theta0+5.11))/180*np.pi)/60/180*np.pi
-
-        line_vector = sky_top_img_pst - star_3d_pst0
-
-        t = symbols('t', real=True, positive=True)
-        star_focal_vector1 = star_3d_pst0 + t*line_vector - focal_3d_pst
-        eq = Eq(
-            star_focal_vector1 @ sky_top_focal_vector,
-            ((star_focal_vector1**2).sum()*(sky_top_focal_vector**2).sum())**0.5 * np.cos(theta1)
-        )
-        t = solve(eq, t)[0]
-        # 计算修正后的星空位置
-        stars_3d_pst1[i] = star_3d_pst0 + t*line_vector
+        # 计算星处夹角
+        beta = np.pi - alpha - theta0
+        # 计算星与灭点的实际距离
+        line_s = np.linalg.norm(sky_top_focal_vector)/np.sin(beta)*np.sin(theta1)
+        # 计算实际星位
+        unit_vector = star_3d_pst0 - sky_top_img_pst
+        unit_vector /= np.linalg.norm(unit_vector)
+        stars_3d_pst1[i] = sky_top_img_pst + unit_vector*line_s
+    
     return stars_3d_pst1[:, :2]
 
 def stars_sky_pst_formater(stars_sky_pst):
@@ -132,18 +134,19 @@ def get_location(stars_sky_pst, theta_cos):
 def main(sky_top_img_pst, stars_img_pst, img_center, stars_sky_pst, is_fix_refraction_error):
     stars_sky_pst = stars_sky_pst_formater(stars_sky_pst)
 
-    s = get_focal_length(stars_sky_pst, stars_img_pst, img_center)
-
-    def func(fix_stars_img_pst):
-        # 将展平的fix_stars_img_pst还原
-        fix_stars_img_pst = fix_stars_img_pst.reshape(stars_img_pst.shape)
-        error = refraction_pst(stars_sky_pst, fix_stars_img_pst, sky_top_img_pst, img_center) - stars_img_pst
-        print((error**2).sum())
-        return error.flatten()
+    def func(fix_stars_img_t):
+        # 计算fix_stars_img_pst
+        fix_stars_img_pst = stars_img_pst + (sky_top_img_pst[:2]-stars_img_pst)*fix_stars_img_t[:, np.newaxis]
+        # 计算误差
+        error = ((refraction_pst(stars_sky_pst, fix_stars_img_pst, sky_top_img_pst, img_center) - stars_img_pst)**2).sum(axis=1)
+        print("迭代-大气折射误差："+str(error.sum()))
+        return error
     
     if is_fix_refraction_error:
-        stars_img_pst = fsolve(func, stars_img_pst.flatten())
+        stars_img_t = fsolve(func, np.zeros(stars_img_pst.shape[0]), xtol=1e-3, maxfev=20)
+        stars_img_pst = stars_img_pst + (sky_top_img_pst[:2]-stars_img_pst)*stars_img_t[:, np.newaxis]
 
+    s = get_focal_length(stars_sky_pst, stars_img_pst, img_center)
     focal_position = np.array([img_center[0], img_center[1], -s], dtype=np.float64)
     star_3d_positions = np.hstack((stars_img_pst, np.zeros((stars_img_pst.shape[0],1))))
     star_3d_vectors = star_3d_positions - focal_position.reshape(1,3)
