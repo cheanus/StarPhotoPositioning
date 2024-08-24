@@ -20,6 +20,7 @@ Only use stars and time to locate the shooting location of photos
 ```bash
 python calculate.py
 ```
+默认图像的拍摄时间为`2024年3月2日20:6:30`，拍摄地点为`西北工业大学长安校区云天苑C座门口`。
 ## Tutorial
 1. 将照片放入`images/`目录下，或者使用该目录下的默认照片
 2. 在`config.yaml`中填写照片路径`image_path`，运行`stars.py`，用小框框选星星，并将得到的坐标填在`stars_img_pst`下
