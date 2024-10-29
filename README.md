@@ -1,6 +1,9 @@
 # StarPhotoPositioning
 仅使用星星和拍摄时间来定位照片的拍摄地点  
 Only use stars and time to locate the shooting location of photos  
+## NOTE
+对本项目感兴趣的朋友可以移步至新项目[StarLocator](https://github.com/BengbuGuards/StarLocator)，目前正在持续迭代中，这将为你带来更好的**交互体验、定位精度和快速反馈渠道**！  
+Friends interested in this project can move to the new project [StarLocator](https://github.com/BengbuGuards/StarLocator), which is currently undergoing continuous iteration. This will bring you a better **interactive experience, positioning accuracy, and fast feedback channel**!
 ## Features
 - 一般只需**2颗星星**即可定位，图中需包含至少**2条铅垂线**
 - **半自动**程序，需要通过拍摄时间的星图辨认星名，手动输入天文数据
